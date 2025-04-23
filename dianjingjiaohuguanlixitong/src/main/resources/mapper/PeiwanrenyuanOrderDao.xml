@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.PeiwanrenyuanOrderDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.peiwanrenyuan_order_uuid_number as peiwanrenyuanOrderUuidNumber
+        ,a.peiwanrenyuan_id as peiwanrenyuanId
+        ,a.yonghu_id as yonghuId
+        ,a.youxi_types as youxiTypes
+        ,a.kaishi_time as kaishiTime
+        ,a.buy_number as buyNumber
+        ,a.peiwanrenyuan_order_true_price as peiwanrenyuanOrderTruePrice
+        ,a.peiwanrenyuan_order_types as peiwanrenyuanOrderTypes
+        ,a.peiwanrenyuan_order_payment_types as peiwanrenyuanOrderPaymentTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.PeiwanrenyuanOrderView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.new_money as newMoney
+        ,peiwanrenyuan.peiwanrenyuan_uuid_mumber as peiwanrenyuanUuidMumber
+        ,peiwanrenyuan.peiwanrenyuan_name as peiwanrenyuanName
+        ,peiwanrenyuan.peiwanrenyuan_phone as peiwanrenyuanPhone
+        ,peiwanrenyuan.peiwanrenyuan_id_number as peiwanrenyuanIdNumber
+        ,peiwanrenyuan.peiwanrenyuan_photo as peiwanrenyuanPhoto
+        ,peiwanrenyuan.peiwanrenyuan_jiage as peiwanrenyuanJiage
+        ,peiwanrenyuan.peiwanrenyuan_shanchang as peiwanrenyuanShanchang
+        ,peiwanrenyuan.peiwanrenyuan_content as peiwanrenyuanContent
+
+        FROM peiwanrenyuan_order  a
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+        left JOIN peiwanrenyuan peiwanrenyuan ON a.peiwanrenyuan_id = peiwanrenyuan.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.peiwanrenyuanOrderUuidNumber != '' and params.peiwanrenyuanOrderUuidNumber != null and params.peiwanrenyuanOrderUuidNumber != 'null' ">
+                and a.peiwanrenyuan_order_uuid_number like CONCAT('%',#{params.peiwanrenyuanOrderUuidNumber},'%')
+            </if>
+            <if test="params.peiwanrenyuanId != null and params.peiwanrenyuanId != ''">
+                and (
+                    a.peiwanrenyuan_id = #{params.peiwanrenyuanId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.youxiTypes != null and params.youxiTypes != ''">
+                and a.youxi_types = #{params.youxiTypes}
+            </if>
+            <if test=" params.kaishiTimeStart != '' and params.kaishiTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.kaishi_time) >= UNIX_TIMESTAMP(#{params.kaishiTimeStart}) ]]>
+            </if>
+            <if test=" params.kaishiTimeEnd != '' and params.kaishiTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.kaishi_time) <= UNIX_TIMESTAMP(#{params.kaishiTimeEnd}) ]]>
+            </if>
+            <if test="params.buyNumberStart != null and params.buyNumberStart != ''">
+                <![CDATA[  and a.buy_number >= #{params.buyNumberStart}   ]]>
+            </if>
+            <if test="params.buyNumberEnd != null and params.buyNumberEnd != ''">
+                <![CDATA[  and a.buy_number <= #{params.buyNumberEnd}   ]]>
+            </if>
+             <if test="params.buyNumber != null and params.buyNumber != ''">
+                and a.buy_number = #{params.buyNumber}
+             </if>
+            <if test="params.peiwanrenyuanOrderTruePriceStart != null ">
+                <![CDATA[  and a.peiwanrenyuan_order_true_price >= #{params.peiwanrenyuanOrderTruePriceStart}   ]]>
+            </if>
+            <if test="params.peiwanrenyuanOrderTruePriceEnd != null ">
+                <![CDATA[  and a.peiwanrenyuan_order_true_price <= #{params.peiwanrenyuanOrderTruePriceEnd}   ]]>
+            </if>
+            <if test="params.peiwanrenyuanOrderTypes != null and params.peiwanrenyuanOrderTypes != ''">
+                and a.peiwanrenyuan_order_types = #{params.peiwanrenyuanOrderTypes}
+            </if>
+            <if test="params.peiwanrenyuanOrderPaymentTypes != null and params.peiwanrenyuanOrderPaymentTypes != ''">
+                and a.peiwanrenyuan_order_payment_types = #{params.peiwanrenyuanOrderPaymentTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+                <!-- 判断陪玩人员的id不为空 -->
+            <if test=" params.peiwanrenyuanIdNotNull != '' and params.peiwanrenyuanIdNotNull != null and params.peiwanrenyuanIdNotNull != 'null' ">
+                and a.peiwanrenyuan_id IS NOT NULL
+            </if>
+            <if test=" params.peiwanrenyuanUuidMumber != '' and params.peiwanrenyuanUuidMumber != null and params.peiwanrenyuanUuidMumber != 'null' ">
+                and peiwanrenyuan.peiwanrenyuan_uuid_mumber like CONCAT('%',#{params.peiwanrenyuanUuidMumber},'%')
+            </if>
+            <if test=" params.peiwanrenyuanName != '' and params.peiwanrenyuanName != null and params.peiwanrenyuanName != 'null' ">
+                and peiwanrenyuan.peiwanrenyuan_name like CONCAT('%',#{params.peiwanrenyuanName},'%')
+            </if>
+            <if test=" params.peiwanrenyuanPhone != '' and params.peiwanrenyuanPhone != null and params.peiwanrenyuanPhone != 'null' ">
+                and peiwanrenyuan.peiwanrenyuan_phone like CONCAT('%',#{params.peiwanrenyuanPhone},'%')
+            </if>
+            <if test=" params.peiwanrenyuanIdNumber != '' and params.peiwanrenyuanIdNumber != null and params.peiwanrenyuanIdNumber != 'null' ">
+                and peiwanrenyuan.peiwanrenyuan_id_number like CONCAT('%',#{params.peiwanrenyuanIdNumber},'%')
+            </if>
+            <if test="params.peiwanrenyuanJiageStart != null ">
+                <![CDATA[  and peiwanrenyuan.peiwanrenyuan_jiage >= #{params.peiwanrenyuanJiageStart}   ]]>
+            </if>
+            <if test="params.peiwanrenyuanJiageEnd != null ">
+                <![CDATA[  and peiwanrenyuan.peiwanrenyuan_jiage <= #{params.peiwanrenyuanJiageEnd}   ]]>
+            </if>
+            <if test=" params.peiwanrenyuanShanchang != '' and params.peiwanrenyuanShanchang != null and params.peiwanrenyuanShanchang != 'null' ">
+                and peiwanrenyuan.peiwanrenyuan_shanchang like CONCAT('%',#{params.peiwanrenyuanShanchang},'%')
+            </if>
+            <if test=" params.peiwanrenyuanContent != '' and params.peiwanrenyuanContent != null and params.peiwanrenyuanContent != 'null' ">
+                and peiwanrenyuan.peiwanrenyuan_content like CONCAT('%',#{params.peiwanrenyuanContent},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
